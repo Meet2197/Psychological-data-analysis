@@ -18,11 +18,12 @@ Before you begin, ensure you have the following installed:
 
 You can install these packages using pip:
 
-```bash
 pip install pandas numpy seaborn matplotlib scipy openpyxl
 
 
-# Usage 
+## Usage 
+--------------------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------------------
 
 Loading Data
 The script reads data from an Excel file located at local/DATA_WORK.xlsx. Modify the path in the script if your file is located elsewhere.
@@ -36,9 +37,7 @@ df.info()
 
 2. Generate descriptive statistics:
 
-```bash
 df.describe()
-```bash
 
 3. Display the first few rows of the DataFrame:
 
@@ -52,16 +51,13 @@ df['Genre'] = df['Genre'].replace({'Femme': 1, 'Homme': 0})
 
 5. Filter data for women in psychological distress:
 
-
 women_distress_df = df[(df['Genre'] == 1) & (df['SCORE_TOTAL_détresse_psychologique_au_travail'] == 1)]
 
 6. Group by sector and count the frequency:
 
-```bash
 sector_distress_freq = women_distress_df.groupby('Secteur_métier').size().reset_index(name='Frequency')
-```bash
 
-# Statistical Analysis and Visualization :
+## Statistical Analysis and Visualization :
 --------------------------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -81,10 +77,8 @@ print(desc_stats)
 
 4. Generate bar and violin plots for descriptive statistics:
 
-```bash
 desc_stats.plot(kind='bar')
 sns.violinplot(data=df, inner='quartile')
-```bash
 
 5. Perform Kruskal-Wallis tests:
 
@@ -94,7 +88,7 @@ kruskal_results_df = pd.DataFrame(kruskal_results)
 
 sns.boxplot(data=df, orient="h")
 
-# Example Outputs:
+## Example Outputs:
 --------------------------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------------------------
 Descriptive statistics for each numeric column.
@@ -102,11 +96,12 @@ Frequency of women in psychological distress in each sector.
 Heatmap showing correlation matrix with significance stars.
 Bar plots, violin plots, and box plots for various statistics.
 
-# License :
+## License :
 --------------------------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------------------------
 This project is licensed under the MIT License. See the LICENSE file for details.
 
 ## Acknowledgements:
+--------------------------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------------------------
 This project uses data analysis libraries such as Pandas, NumPy, Seaborn, Matplotlib, and Scipy. Special thanks to the open-source community for providing these tools.
