@@ -20,7 +20,6 @@ You can install these packages using pip:
 
 ```bash
 pip install pandas numpy seaborn matplotlib scipy openpyxl
-bash```
 
 Usage 
 --------------------------------------------------------------------------------------------------------------------------------------------
