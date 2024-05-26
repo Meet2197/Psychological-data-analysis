@@ -21,9 +21,9 @@ You can install these packages using pip:
 ```bash
 pip install pandas numpy seaborn matplotlib scipy openpyxl
 
-Usage 
---------------------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------------------
+
+# Usage 
+
 Loading Data
 The script reads data from an Excel file located at local/DATA_WORK.xlsx. Modify the path in the script if your file is located elsewhere.
 
@@ -107,6 +107,6 @@ Bar plots, violin plots, and box plots for various statistics.
 --------------------------------------------------------------------------------------------------------------------------------------------
 This project is licensed under the MIT License. See the LICENSE file for details.
 
-# Acknowledgements:
+## Acknowledgements:
 --------------------------------------------------------------------------------------------------------------------------------------------
 This project uses data analysis libraries such as Pandas, NumPy, Seaborn, Matplotlib, and Scipy. Special thanks to the open-source community for providing these tools.
