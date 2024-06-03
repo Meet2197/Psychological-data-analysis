@@ -1,86 +1,140 @@
+import scipy.stats as stats
 import pandas as pd
-import numpy as np
-import seaborn as sns
 import matplotlib.pyplot as plt
-from scipy import stats
-from scipy.stats import kruskal
+import seaborn as sns
 
-# Read your data into a pandas DataFrame
-df = pd.read_excel('C:/Users/User/Downloads/work.xlsx')
+# Read the data into a pandas DataFrame
+df3 = pd.read_excel('C:/Users/User/Downloads/DATA_WORK.xlsx')
 
-# Calculate basic descriptive statistics
-descriptive_stats = df.describe().transpose()
+# Replace 'Non administratif' with 0 and 'Administratif' with 1
+df3['POSTE'] = df3['POSTE'].replace({'Non administratif': 0, 'Administratif': 1})
+df3['Genre'] = df3['Genre'].replace({'Homme': 0, 'Femme': 1})
 
-# Calculate mode for each column
-modes = df.mode().iloc[0]
+# Explicitly set the column type to integer if desired
+df3['POSTE'] = df3['POSTE'].astype(int)
 
-# Add mode to the descriptive statistics
-descriptive_stats['mode'] = modes
+# Display the updated DataFrame
+print(df3)
 
-# Calculate standard error of the mean (SEM)
-descriptive_stats['sem'] = descriptive_stats['std'] / np.sqrt(descriptive_stats['count'])
+# Extract relevant data and drop any rows with missing values
+data = df3[['POSTE', 'SCORE_TOTAL_détresse_psychologique_au_travail']].dropna()
 
-# Calculate interquartile range (IQR)
-descriptive_stats['iqr'] = descriptive_stats['75%'] - descriptive_stats['25%']
+# Perform a t-test to compare the means of the two groups
+group1 = data[data['POSTE'] == 0]['SCORE_TOTAL_détresse_psychologique_au_travail']
+group2 = data[data['POSTE'] == 1]['SCORE_TOTAL_détresse_psychologique_au_travail']
 
-# Create a DataFrame to hold the calculated statistics
-desc_stats = descriptive_stats[['mean', '50%', 'mode', 'std', 'sem', 'iqr']].rename(columns={'50%': 'median'})
+t_stat, p_value = stats.ttest_ind(group1, group2)
 
-# Display the descriptive statistics
-print("Descriptive Statistics:")
-print(desc_stats)
+print(f"T-statistic: {t_stat}, P-value: {p_value}")
 
-# Plot the descriptive statistics
-plt.figure(figsize=(15, 10))
-desc_stats.plot(kind='bar')
-plt.title('Descriptive Statistics for Each Numeric Column')
-plt.xlabel('Variables')
-plt.ylabel('Values')
-plt.xticks(rotation=45, ha='right')
-plt.legend(title='Statistics')
-plt.tight_layout()
+# Generate a box plot to visualize the distribution
+plt.figure(figsize=(10, 6))
+sns.boxplot(x='POSTE', y='SCORE_TOTAL_détresse_psychologique_au_travail', data=data)
+plt.xlabel('POSTE (0 = Non administratif, 1 = Administratif)')
+plt.ylabel('SCORE_TOTAL_détresse_psychologique_au_travail')
+plt.title('Distribution of Psychological Distress Scores by POSTE')
 plt.show()
 
-# Create a violin plot for descriptive statistics
-plt.figure(figsize=(15, 10))
-sns.violinplot(data=df, inner='quartile')
-plt.title('Graphique en boîte pour les statistiques descriptives')
-plt.xticks(rotation=90)
+# Generate a bar plot to show the mean scores with error bars
+plt.figure(figsize=(10, 6))
+sns.barplot(x='POSTE', y='SCORE_TOTAL_détresse_psychologique_au_travail', data=data, ci='sd')
+plt.xlabel('POSTE (0 = Non administratif, 1 = Administratif)')
+plt.ylabel('Mean SCORE_TOTAL_détresse_psychologique_au_travail')
+plt.title('Mean Psychological Distress Scores by POSTE with Standard Deviation')
 plt.show()
 
-grouping_variable = df.columns[1]  # Change this if you want to group by a different column
 
-# Prepare a DataFrame to hold Kruskal-Wallis test results
-kruskal_results = []
+# Extract relevant data and drop any rows with missing values
+data = df3[['Secteur_métier', 'Genre', 'Age', 'SCORE_TOTAL_détresse_psychologique_au_travail']].dropna()
 
-# Conduct the Kruskal-Wallis test for each numeric column
-for column in df.select_dtypes(include=[np.number]).columns:
-    groups = [df[column][df[grouping_variable] == level] for level in df[grouping_variable].unique()]
-    stat, p_value = kruskal(*groups)
-    kruskal_results.append({'Variable': column, 'Kruskal-Wallis statistiques': stat, 'p-value': p_value})
+# Check the unique values in 'Secteur_métier' to understand the categories
+print(data['Secteur_métier'].unique())
+
+# Perform a t-test to compare the means of psychological distress scores between different 'Secteur_métier' groups
+unique_secteurs = data['Secteur_métier'].unique()
+for i in range(len(unique_secteurs)):
+    for j in range(i + 1, len(unique_secteurs)):
+        group1 = data[data['Secteur_métier'] == unique_secteurs[i]]['SCORE_TOTAL_détresse_psychologique_au_travail']
+        group2 = data[data['Secteur_métier'] == unique_secteurs[j]]['SCORE_TOTAL_détresse_psychologique_au_travail']
+        t_stat, p_value = stats.ttest_ind(group1, group2)
+        print(f"Comparing {unique_secteurs[i]} and {unique_secteurs[j]}: T-statistic = {t_stat}, P-value = {p_value}")
+
+# Generate a box plot to visualize the distribution by 'Secteur_métier' and 'Genre'
+plt.figure(figsize=(12, 8))
+sns.boxplot(x='Secteur_métier', y='SCORE_TOTAL_détresse_psychologique_au_travail', hue='Genre', data=data)
+plt.xlabel('Secteur_métier')
+plt.ylabel('SCORE_TOTAL_détresse_psychologique_au_travail')
+plt.title('Distribution of Psychological Distress Scores by Secteur Metier and Genre')
+plt.xticks(rotation=45)
+
+# Add custom annotation inside the plot
+plt.text(x=0.5, y=max(data['SCORE_TOTAL_détresse_psychologique_au_travail']),
+         s='Note: Homme = 0, Femme = 1',
+         horizontalalignment='center', fontsize=12, color='black',
+         bbox=dict(facecolor='white', alpha=0.5))
+
+plt.legend(title='Genre', loc='upper right', labels=['Homme', 'Femme'])
+plt.show()
+
+# Generate a scatter plot to show the relationship between 'Age' and psychological distress scores by 'Secteur_métier' and 'Genre'
+plt.figure(figsize=(12, 8))
+sns.scatterplot(x='Age', y='SCORE_TOTAL_détresse_psychologique_au_travail', hue='Secteur_métier', style='Genre', data=data)
+plt.xlabel('Age')
+plt.ylabel('SCORE_TOTAL_détresse_psychologique_au_travail')
+plt.title('Psychological Distress Scores by Age, Secteur Metier, and Genre')
+plt.show()
+
+
+# Create a results table to store t-test results
+results = []
+
+# Perform a t-test to compare the means of psychological distress scores between different 'Secteur_métier' groups
+unique_secteurs = data['Secteur_métier'].unique()
+for i in range(len(unique_secteurs)):
+    for j in range(i + 1, len(unique_secteurs)):
+        group1 = data[data['Secteur_métier'] == unique_secteurs[i]]['SCORE_TOTAL_détresse_psychologique_au_travail']
+        group2 = data[data['Secteur_métier'] == unique_secteurs[j]]['SCORE_TOTAL_détresse_psychologique_au_travail']
+        t_stat, p_value = stats.ttest_ind(group1, group2)
+        results.append({
+            'Secteur_métier_1': unique_secteurs[i],
+            'Secteur_métier_2': unique_secteurs[j],
+            'T-statistic': t_stat,
+            'P-value': p_value
+        })
 
 # Convert the results to a DataFrame
-kruskal_results_df = pd.DataFrame(kruskal_results)
+results_df = pd.DataFrame(results)
 
-# Display the Kruskal-Wallis test results
-print("Kruskal-Wallis Test Results:")
-print(kruskal_results_df)
+# Display the results table
+print(results_df)
 
-# Create box plots for each numeric column, grouped by the categorical variable
-plt.figure(figsize=(15, 10))
-sns.boxplot(data=df, orient="h")
-plt.title('Graphique en boîte pour les statistiques descriptives')
-plt.xticks(rotation=90)
-plt.show()
+# Check if the column exists
+if 'Secteur_métier' in df3.columns:
+    # Calculate the frequency of each unique value in the Secteur_métier column
+    secteur_freq = df3['Secteur_métier'].value_counts()
+    print(secteur_freq)
+else:
+    print("The 'Secteur_métier' column does not exist in the dataframe.")
 
-# Create box plots for each numeric column, grouped by the categorical variable
-plt.figure(figsize=(15, 10))
-for column in df.select_dtypes(include=[np.number]).columns:
-    plt.figure()
-    sns.boxplot(x=grouping_variable, y=column, data=df)
-    plt.title(f'Box Plot of {column} Grouped by {grouping_variable}')
-    plt.xlabel(grouping_variable)
-    plt.ylabel(column)
-    plt.xticks(rotation=45)
-    plt.tight_layout()
+# Perform ANOVA if the columns exist
+if 'Secteur_métier' in df3.columns and 'SCORE_Epuisement_professionnel ' in df3.columns:
+    anova_result = stats.f_oneway(*[df3[df3['Secteur_métier'] == secteur]['SCORE_Epuisement_professionnel '] for secteur in df3['Secteur_métier'].unique()])
+    print(anova_result)
+else:
+    print("Required columns for ANOVA do not exist in the dataframe.")
+
+# Plot boxplot for the numerical variable across different Secteur_métier groups if columns exist
+if 'Secteur_métier' in df3.columns and 'SCORE_Epuisement_professionnel ' in df3.columns:
+    plt.figure(figsize=(12, 6))
+    sns.boxplot(x='Secteur_métier', y='SCORE_Epuisement_professionnel ', data=df3)
+    plt.title('Boxplot of SCORE_Epuisement_professionnel by Secteur_métier')
+    plt.xlabel('Secteur_métier')
+    plt.ylabel('SCORE_Epuisement_professionnel')
+    plt.xticks(rotation=90, fontsize=6)
     plt.show()
+else:
+    print("Required columns for plotting do not exist in the dataframe.")
+# ADSM - Arts - Danse - Spectacle- Musique,  Ins-Acc : Insertion - Accompagnement , Aéronautique - Spacial : Aer-Sp , Médical - Santé - Hôpital - Soins : MSHS ,
+# Enseignement - Education - Universitaire : EEU , BTP , Administration - Secretariat - Assistant : ASA,  Banque - Assurance - Finance : BAF,
+# Social - Service à la personne - Aide à la personne : SSPAP , Secteur public - Administration  : SPA, Transport - logistique : TL,
+# Commerce - Distribution - Vente - E commerce : CDVEC, Psychologue ( santé mentale / physique) : Psycho
